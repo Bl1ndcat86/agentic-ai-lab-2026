@@ -18,7 +18,7 @@ Testing the viability of:
 * Visualization:** Next.js + D3.js (Real-time WebSockets)
 
 ## Live Simulation
-[Link to your GCP Webpage here once deployed]
+[Link to my GCP Webpage here once deployed! Dont Forget Memo]
 *Click the "Run AAM Simulation" button on the site to see agents negotiate in real-time.*
 
 ## Related Research
