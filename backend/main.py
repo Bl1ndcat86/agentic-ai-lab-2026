@@ -1,7 +1,9 @@
 import os
 import logging
+from datetime import datetime
 from typing import List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import google.generativeai as genai
 
@@ -10,85 +12,110 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="Agentic AI Lab - AAM/GMD Research",
-    description="2026 Edition: High-speed reasoning for Autonomous Allocation Mechanisms."
+    title="GMD Research Lab - Command Center",
+    description="Refined Backend for AAM Governance Simulations."
 )
 
-# Load the Gemini API Key from your Cloud Run Environment Variables
-# IMPORTANT: Ensure this key is from your 'Default Gemini Project' (the paid one)
+# --- 2. CORS MIDDLEWARE ---
+# This allows your index.html (running locally) to talk to Cloud Run.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- 3. GLOBAL RESEARCH STATE ---
+# This stores your decisions for the GET /history endpoint.
+DECISION_HISTORY = []
+
+# --- 4. AI BRAIN INITIALIZATION ---
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
-    # Using the 2026 Stable Standard: gemini-2.5-flash
+    # Using the 2026 GA Stable model for Paid Tier reliability
     model = genai.GenerativeModel(model_name='gemini-2.5-flash')
-    logger.info("Gemini 2.5 Flash successfully configured on Paid Tier.")
+    logger.info("Gemini 2.5 Flash initialized on Paid Tier.")
 else:
-    logger.warning("GEMINI_API_KEY is missing! The 'Brain' is offline.")
+    logger.warning("GEMINI_API_KEY missing. Reasoning endpoints will return errors.")
 
-# --- 2. MODELS ---
+# --- 5. DATA MODELS ---
 class ReasoningRequest(BaseModel):
     scenario: str
-    context: str = "AAM/GMD Framework"
+    context: str = "AAM Conflict Simulation"
 
-# --- 3. REST ENDPOINTS ---
+# --- 6. REST ENDPOINTS ---
 
 @app.get("/")
 async def health_check():
-    """Verifies infrastructure and AI connectivity."""
+    """The 'Status Light' endpoint for the UI."""
     return {
         "status": "online",
-        "model": "gemini-2.5-flash",
+        "timestamp": datetime.now().isoformat(),
         "ai_enabled": bool(GEMINI_API_KEY),
-        "research": "AAM & Governance as Mechanism Design"
+        "model": "gemini-2.5-flash"
+    }
+
+@app.get("/history")
+async def get_history():
+    """GET Endpoint: Retrieve the last 10 research scenarios and decisions."""
+    return {
+        "count": len(DECISION_HISTORY),
+        "logs": DECISION_HISTORY[-10:] # Return most recent 10
     }
 
 @app.post("/reason")
 async def direct_reasoning(request: ReasoningRequest):
-    """Directly test a PhD scenario via Swagger UI."""
+    """POST Endpoint: Process scenario and log the result to history."""
     if not GEMINI_API_KEY:
-        return {"error": "AI not enabled. Please check your API Key and Billing."}
+        return {"error": "AI Brain Offline. Check Billing/API Key."}
         
     prompt = (
         f"Role: Governance Engine for an Autonomous Allocation Mechanism (AAM).\n"
         f"Context: {request.context}\n"
-        f"Task: Analyze this resource conflict and provide an incentive-compatible decision.\n"
-        f"Scenario: {request.scenario}"
+        f"Scenario: {request.scenario}\n\n"
+        f"Task: Provide a structured governance decision and incentive analysis."
     )
     
     try:
         response = model.generate_content(prompt)
-        return {
-            "status": "decision_rendered",
+        
+        # Create a research log entry
+        decision_entry = {
+            "id": len(DECISION_HISTORY) + 1,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "scenario": request.scenario,
             "analysis": response.text
         }
+        
+        # Save to memory
+        DECISION_HISTORY.append(decision_entry)
+        
+        return decision_entry
+        
     except Exception as e:
         logger.error(f"Reasoning Error: {e}")
         return {"error": str(e)}
 
-# --- 4. WEBSOCKET ENDPOINTS ---
+# --- 7. WEBSOCKET (Live Agent Streaming) ---
 
 @app.websocket("/ws")
 async def agent_socket(websocket: WebSocket):
-    """Real-time streaming for multi-agent PhD simulations."""
     await websocket.accept()
-    logger.info("WebSocket connection established.")
+    logger.info("Live Agent Stream Connected.")
     
     try:
         while True:
             data = await websocket.receive_text()
             if GEMINI_API_KEY:
-                prompt = f"Analyze this agentic state and provide a real-time GMD response: {data}"
-                response = model.generate_content(prompt)
+                # Direct simulation of agent 'thought' stream
+                response = model.generate_content(f"GMD Agent Response: {data}")
                 await websocket.send_json({
-                    "type": "agent_reasoning",
-                    "content": response.text
+                    "type": "stream_output",
+                    "content": response.text,
+                    "time": datetime.now().isoformat()
                 })
-            else:
-                await websocket.send_json({"type": "error", "content": "AI logic offline."})
-                
     except WebSocketDisconnect:
-        logger.info("Client disconnected.")
-    except Exception as e:
-        logger.error(f"WS Error: {e}")
-        await websocket.send_json({"type": "error", "content": str(e)})
+        logger.info("Agent Disconnected.")
