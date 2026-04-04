@@ -19,7 +19,7 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel(model_name='gemini-2.0-flash')
+    model = genai.GenerativeModel(model_name='gemini-3-flash')
     logger.info("Gemini 1.5 Flash successfully configured.")
 else:
     logger.warning("GEMINI_API_KEY is missing! Agent logic will be disabled.")
