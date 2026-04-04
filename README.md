@@ -1,3 +1,4 @@
+![Status: Work in Progress](https://img.shields.io/badge/Status-Research_in_Progress-yellow)
 # agentic-ai-lab-2026
 Agentic AI Lab to test some of my PhD work in action. Work in Progress 
 
