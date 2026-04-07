@@ -4,20 +4,16 @@ from typing import List
 from governor.aam_engine import AAM_Engine
 from governor.aam_config import PROFILES
 
-app = FastAPI(title="GMD AAM Hub - Audit Dashboard")
+app = FastAPI(title="GMD AAM Hub - PhD Dashboard")
 
 class Transaction(BaseModel):
     task_id: str
     value: float
     criticality: float
     uncertainty: float
+    reasoning: str # Accept the thinking from the Agent
 
-# Initialize the Mechanism
 engine = AAM_Engine(PROFILES["FINANCE_DEPT"])
-
-@app.get("/")
-def health_check():
-    return {"status": "Active", "mechanism": "AAM-GMD"}
 
 @app.post("/decide", response_model=List[dict])
 async def get_batch_decision(txns: List[Transaction]):
@@ -25,12 +21,13 @@ async def get_batch_decision(txns: List[Transaction]):
     for txn in txns:
         decision, log = engine.decide(txn.task_id, txn.value, txn.criticality, txn.uncertainty)
         
-        # Flatten the data for the Web UI table
+        # This structure tells Swagger how to build the "Table"
         audit_table.append({
             "ID": txn.task_id,
             "Lx_Level": decision,
-            "Utility": log["utility_score"],
+            "Utility": round(log["utility_score"], 2),
             "Risk_Mitigated": "✅ YES" if "L4" not in decision else "🚀 NO",
-            "Principal_Value": txn.value
+            "Gemini_Reasoning": txn.reasoning,
+            "Value": f"${txn.value:,.2f}"
         })
     return audit_table
