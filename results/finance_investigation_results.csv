@@ -1,1 +1,11 @@
-
+ID,Lx_Level,Utility,Risk_Mitigated,Gemini_Reasoning,Value
+C1231006815,L4 - Audited Autonomy (Full Execution),9206.39,🚀 NO,🚨 FALLBACK_DETERMINISTIC: Transaction amount is within standard deviation for account history.,"$9,839.64"
+C1666544295,L4 - Audited Autonomy (Full Execution),1276.47,🚀 NO,🚨 FALLBACK_DETERMINISTIC: Routine payment to a verified merchant account.,"$1,864.28"
+C1305486145,L0 - No Autonomy (Task Rejected/Hard Block),-18154.06,✅ YES,🚨 FALLBACK_DETERMINISTIC: Transfer amount matches total balance; typical account takeover signature.,$181.00
+C840083671,L0 - No Autonomy (Task Rejected/Hard Block),-5689.39,✅ YES,🚨 FALLBACK_DETERMINISTIC: Suspicious rapid cash-out following a transfer event.,$181.00
+C2048537720,L4 - Audited Autonomy (Full Execution),10680.74,🚀 NO,🚨 FALLBACK_DETERMINISTIC: High value but consistent with previous monthly payment cycles.,"$11,668.14"
+C90045638,L4 - Audited Autonomy (Full Execution),7451.25,🚀 NO,🚨 FALLBACK_DETERMINISTIC: Low uncertainty based on recipient reputation score.,"$7,817.71"
+C154988899,L4 - Audited Autonomy (Full Execution),6815.28,🚀 NO,🚨 FALLBACK_DETERMINISTIC: Authorized recurring transaction confirmed via token.,"$7,107.77"
+C1912850431,L4 - Audited Autonomy (Full Execution),7579.03,🚀 NO,🚨 FALLBACK_DETERMINISTIC: Validated origin IP and known device signature.,"$7,861.64"
+C1265012928,L4 - Audited Autonomy (Full Execution),3354.5,🚀 NO,🚨 FALLBACK_DETERMINISTIC: Standard payment behavior detected; low risk profile.,"$4,024.36"
+C712410124,L4 - Audited Autonomy (Full Execution),4183.93,🚀 NO,🚨 FALLBACK_DETERMINISTIC: Transaction within normal limits for this merchant category.,"$5,337.77"
