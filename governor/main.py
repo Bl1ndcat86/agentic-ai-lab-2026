@@ -1,11 +1,17 @@
 from fastapi import FastAPI
-# Absolute imports are safer for Cloud Run deployment
+from pydantic import BaseModel
 from governor.aam_engine import AAM_Engine
 from governor.aam_config import PROFILES
 
 app = FastAPI(title="GMD AAM Hub")
 
-# Initialize the engine for Finance (or your preferred dept)
+# 1. Define the Transaction Model (This creates the 'Request Body' in Swagger)
+class Transaction(BaseModel):
+    task_id: str
+    value: float
+    criticality: float
+    uncertainty: float
+
 engine = AAM_Engine(PROFILES["FINANCE_DEPT"])
 
 @app.get("/")
@@ -13,7 +19,7 @@ def health_check():
     return {"status": "online", "mechanism": "AAM-GMD"}
 
 @app.post("/decide")
-async def get_decision(task_id: str, value: float, criticality: float, uncertainty: float):
-    # This executes your core AAM logic [cite: 93]
-    decision, log = engine.decide(task_id, value, criticality, uncertainty)
+async def get_decision(txn: Transaction):
+    # Pass the data from the txn object to the engine
+    decision, log = engine.decide(txn.task_id, txn.value, txn.criticality, txn.uncertainty)
     return {"decision": decision, "audit_trail": log}
