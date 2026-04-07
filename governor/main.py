@@ -1,12 +1,19 @@
 from fastapi import FastAPI
-from .aam_engine import AAM_Engine
-from .aam_config import PROFILES
+import os
+# Change relative imports to absolute imports
+from governor.aam_engine import AAM_Engine
+from governor.aam_config import PROFILES
 
 app = FastAPI(title="GMD AAM Hub")
-engine = AAM_Engine(PROFILES["FINANCE_DEPT"]) # Default profile
+
+# Initialize the engine
+engine = AAM_Engine(PROFILES["FINANCE_DEPT"])
+
+@app.get("/")
+def health_check():
+    return {"status": "online", "mechanism": "AAM-GMD"}
 
 @app.post("/decide")
-async def get_governance_decision(task_id: str, V: float, C: float, Um: float):
-    # AAM assigns dynamic autonomy Lx based on uncertainty Um
-    decision, log = engine.decide(task_id, V, C, Um)
-    return {"level": decision, "audit_trail": log}
+async def get_decision(task_id: str, value: float, criticality: float, uncertainty: float):
+    decision, log = engine.decide(task_id, value, criticality, uncertainty)
+    return {"decision": decision, "audit_trail": log}
