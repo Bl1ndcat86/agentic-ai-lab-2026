@@ -1,44 +1,48 @@
-import pandas as pd
-import json
 import requests
+import json
+import pandas as pd
+import os
+from datetime import datetime
 
-URL_BASE = "https://agentic-ai-lab-2026-1054065165765.us-central1.run.app/decide"
+class MultiIngester:
+    def __init__(self, base_url="http://127.0.0.1:8080"):
+        self.base_url = base_url
+        self.results_dir = "thesis_results"
+        os.makedirs(self.results_dir, exist_ok=True)
 
-def run_scenario(escenario, file_path):
-    print(f"--- 🚀 Ejecutando Escenario: {escenario.upper()} ---")
-    payload = []
-
-    if escenario == "legal":
-        df = pd.read_csv(file_path)
-        for i, row in df.head(5).iterrows():
-            payload.append({
-                "task_id": f"LAW-{i}", "value": 15000.0, "criticality": 4000.0,
-                "metadata": {"clausula": str(row.iloc[1])}
-            })
-
-    elif escenario == "conocimiento":
+    def run_experiment(self, escenario, file_path, batch_size=100):
+        """
+        Procesa un escenario específico (LEGAL, FINANCE, CAFE, CHOCOLATE)
+        """
+        print(f"🔬 Iniciando Experimento GMD: {escenario}")
+        endpoint = f"{self.base_url}/decide/{escenario.lower()}"
+        
         with open(file_path, 'r') as f:
-            data = json.load(f)
-            for i, item in enumerate(data[:5]):
-                payload.append({
-                    "task_id": f"HALU-{i}", "value": 1.0, "criticality": 500.0,
-                    "metadata": {"pregunta": item['question'], "respuesta": item['answer']}
-                })
+            tasks = json.load(f)
 
-    elif escenario == "cafeteria":
-        df = pd.read_csv(file_path)
-        for i, row in df.head(5).iterrows():
-            payload.append({
-                "task_id": f"COFFEE-{i}", "value": float(row.get('money', 5.0)), "criticality": 80.0,
-                "metadata": {"producto": row.get('coffee_name', 'Desconocido')}
-            })
+        all_results = []
+        
+        for i in range(0, len(tasks), batch_size):
+            batch = tasks[i:i + batch_size]
+            print(f"🚀 Procesando lote {i//batch_size + 1} de {len(tasks)//batch_size + 1}...")
+            
+            try:
+                response = requests.post(endpoint, json=batch, timeout=60)
+                if response.status_code == 200:
+                    all_results.extend(response.json())
+                else:
+                    print(f"❌ Error en lote: {response.status_code}")
+            except Exception as e:
+                print(f"⚠️ Fallo de conexión: {e}")
 
-    try:
-        res = requests.post(f"{URL_BASE}/{escenario}", json=payload)
-        print(json.dumps(res.json(), indent=2))
-    except Exception as e:
-        print(f"❌ Error: {e}")
+        # Guardar evidencia para el artículo correspondiente
+        df = pd.DataFrame(all_results)
+        filename = f"{self.results_dir}/{escenario}_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+        df.to_csv(filename, index=False)
+        print(f"✅ Datos guardados en: {filename}\n")
+        return df
 
-if __name__ == "__main__":
-    # Ejemplo:
-    run_scenario("legal", "data/master_clauses.csv")
+# Ejemplo de ejecución para tus artículos:
+# ingester = MultiIngester()
+# ingester.run_experiment("FINANCE", "data/10k_transacciones.json")
+# ingester.run_experiment("LEGAL", "data/contratos_cuad.json")
