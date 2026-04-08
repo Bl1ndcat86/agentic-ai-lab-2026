@@ -1,18 +1,28 @@
-# Mechanism Design Parameters for different Agentic Contexts
+# Configuración de Perfiles para el Mecanismo AAM
 PROFILES = {
     "FINANCE_DEPT": {
-        "control_cost_coefficient": 0.15,  # Cc: Cost of human oversight
-        "error_cost_multiplier": 5.0,      # Ce: Impact of a mistake
-        "utility_threshold": 0.65          # Min utility for L4 autonomy
+        "Cc": 0.01,         # Costo de Control (Bajo para transacciones masivas)
+        "Ce_factor": 1.5,    # Factor de error (Pérdida directa del monto)
+        "threshold": 500     # Umbral de utilidad para otorgar Autonomía L4
     },
-    "PRODUCT_OPS": {
-        "control_cost_coefficient": 0.05, 
-        "error_cost_multiplier": 1.5,
-        "utility_threshold": 0.40
+    "LEGAL_DEPT": {
+        "Cc": 0.05, 
+        "Ce_factor": 10.0,   # Riesgo legal es carísimo (10x el valor del contrato)
+        "threshold": 2000
     },
-    "AI_RESEARCH_LAB": {
-        "control_cost_coefficient": 0.02,
-        "error_cost_multiplier": 1.0,
-        "utility_threshold": 0.20
+    "HALUEVAL_DEPT": {
+        "Cc": 0.01, 
+        "Ce_factor": 5.0,    # Alucinaciones en IA tienen alto costo reputacional
+        "threshold": 100
+    },
+    "INVENTORY_DEPT": { # Chocolate
+        "Cc": 0.02, 
+        "Ce_factor": 1.2,    # Riesgo de merma física
+        "threshold": 50
+    },
+    "SUPPLY_DEPT": { # Cafetería
+        "Cc": 0.02, 
+        "Ce_factor": 2.5,    # Riesgo ético y de calidad del grano
+        "threshold": 150
     }
 }
